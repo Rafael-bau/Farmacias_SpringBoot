@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Usuarios')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: barra}"></header>
+<div class="contenedor-app">
+<nav th:replace="~{fragments/layout :: menu('usuarios')}"></nav>
+<main class="contenido">
+<div th:replace="~{fragments/layout :: mensajes}"></div>
+<h1 class="titulo-seccion">Usuarios</h1>
+<button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#usuarioModal" onclick="nuevoUsuario()">
+    Agregar usuario
+</button>
+<div class="tabla-responsive">
+<table class="tabla-urb">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Usuario</th>
+        <th scope="col">Rol</th>
+        <th scope="col">Cliente vinculado</th>
+        <th scope="col">Estatus</th>
+        <th scope="col">Acción</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="usuario, fila : ${usuarios}" th:classappend="${usuario.estatus} ? '' : 'fila-inactiva'">
+        <th scope="row" th:text="${fila.count}">1</th>
+        <td><span th:text="${usuario.nombre}">Nombre</span><br><small th:text="${usuario.correo}">correo</small></td>
+        <td><span th:text="${usuario.rol.nombre}">Rol</span></td>
+        <td><span th:text="${clientePorUsuario[usuario.id] != null} ? ${clientePorUsuario[usuario.id].nombre} : ''"></span></td>
+        <td><span class="insignia" th:classappend="${usuario.estatus} ? 'ok' : 'peligro'" th:text="${usuario.estatus} ? 'Activo' : 'Baja'">Activo</span></td>
+        <td class="text-nowrap">
+            <button type="button" class="btn btn-warning btn-sm btn-editar" data-bs-toggle="modal" data-bs-target="#usuarioModal"
+                    th:data-id="${usuario.id}" th:data-nombre="${usuario.nombre}" th:data-correo="${usuario.correo}" th:data-rolid="${usuario.rol.id}" th:data-clienteid="${clientePorUsuario[usuario.id] != null} ? ${clientePorUsuario[usuario.id].id} : ''" th:data-estatus="${usuario.estatus} ? 1 : 0">Editar</button>
+            <th:block th:if="${usuario.id != #authentication.principal.usuario.id}">
+            <form th:action="@{/usuarios/eliminar}" method="post" style="display:inline;"
+                  onsubmit="return confirm('¿Dar de baja a este usuario?');">
+                <input type="hidden" name="id" th:value="${usuario.id}">
+                <button type="submit" class="btn btn-danger btn-sm">Baja</button>
+            </form>
+            </th:block>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(usuarios)}"><td colspan="6" class="vacio">No hay usuarios.</td></tr>
+    </tbody>
+</table>
+</div>
+
+<div class="modal fade" id="usuarioModal" tabindex="-1" aria-labelledby="usuarioModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="usuarioModalLabel">Formulario de usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form th:action="@{/usuarios/guardar}" method="post" id="formUsuario">
+        <input type="hidden" id="id" name="id" value="0">
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre completo</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" maxlength="100" required pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ .'\-]{2,99}" title="Solo letras y espacios (mínimo 3 caracteres)">
+          </div>
+
+          <div class="mb-3">
+            <label for="correo" class="form-label">Correo electrónico</label>
+            <input type="email" class="form-control" id="correo" name="correo" maxlength="100" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Contraseña <small class="text-secondary" id="ayudaPassword">(mínimo 8 caracteres)</small></label>
+            <input type="password" class="form-control" id="password" name="password" minlength="8" maxlength="72" autocomplete="new-password" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="rolId" class="form-label">Rol</label>
+            <select class="form-select" id="rolId" name="rolId" required>
+                <option value="" data-cliente="0">Selecciona un rol</option>
+                <option th:each="rol : ${roles}" th:value="${rol.id}" th:text="${rol.nombre}" th:attr="data-cliente=${rol.nombre == 'Cliente'} ? 1 : 0">Rol</option>
+            </select>
+          </div>
+
+          <div class="mb-3" id="bloqueCliente" style="display:none">
+            <label for="clienteId" class="form-label">Cliente al que pertenece la cuenta</label>
+            <select class="form-select" id="clienteId" name="clienteId">
+                <option value="">Selecciona un cliente</option>
+                <option th:each="cl : ${clientes}" th:value="${cl.id}" th:text="${cl.nombre} + ' (' + ${cl.telefono} + ')' + (${cl.usuario != null} ? ' — ya tiene cuenta' : '')">Cliente</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="estatus" class="form-label">Estatus</label>
+            <select class="form-select" id="estatus" name="estatus">
+                <option value="1">Activo</option>
+                <option value="0">Baja</option>
+            </select>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar usuario</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    function nuevoUsuario()
+    {
+        document.getElementById("formUsuario").reset();
+        document.getElementById("id").value = "0";
+        document.getElementById("usuarioModalLabel").textContent = "Agregar usuario";
+        document.getElementById("btnGuardar").textContent = "Guardar usuario";
+        document.getElementById("password").required = true;
+        document.getElementById("ayudaPassword").textContent = "(mínimo 8 caracteres)";
+        actualizarCliente();
+    }
+    document.getElementById("usuarioModal").addEventListener("show.bs.modal",
+        function(event)
+        {
+            const boton = event.relatedTarget;
+            if (!boton || !boton.classList.contains("btn-editar"))
+            {
+                return;
+            }
+            document.getElementById("id").value = boton.getAttribute("data-id");
+            document.getElementById("nombre").value = boton.getAttribute("data-nombre");
+            document.getElementById("correo").value = boton.getAttribute("data-correo");
+            document.getElementById("rolId").value = boton.getAttribute("data-rolid");
+            document.getElementById("clienteId").value = boton.getAttribute("data-clienteid");
+            document.getElementById("estatus").value = boton.getAttribute("data-estatus");
+            document.getElementById("usuarioModalLabel").textContent = "Editar usuario";
+            document.getElementById("btnGuardar").textContent = "Actualizar usuario";
+            document.getElementById("password").value = "";
+            document.getElementById("password").required = false;
+            document.getElementById("ayudaPassword").textContent = "(déjala vacía para no cambiarla)";
+            actualizarCliente();
+        }
+    );
+    // El selector de cliente solo se muestra cuando el rol elegido es "Cliente"
+    function actualizarCliente()
+    {
+        const sel = document.getElementById("rolId");
+        const opcion = sel.options[sel.selectedIndex];
+        const esCliente = opcion && opcion.getAttribute("data-cliente") === "1";
+        document.getElementById("bloqueCliente").style.display = esCliente ? "" : "none";
+        document.getElementById("clienteId").required = esCliente;
+    }
+    document.getElementById("rolId").addEventListener("change", actualizarCliente);
+</script>
+</body>
+</html>

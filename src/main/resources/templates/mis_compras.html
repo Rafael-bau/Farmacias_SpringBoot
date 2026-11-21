@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Compras')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: barra}"></header>
+<div class="contenedor-app">
+<nav th:replace="~{fragments/layout :: menu('compras')}"></nav>
+<main class="contenido">
+<div th:replace="~{fragments/layout :: mensajes}"></div>
+<h1 class="titulo-seccion">Compras</h1>
+<div class="alert alert-warning" th:if="${sinCliente}">Tu cuenta aún no está vinculada a un cliente. Pide al administrador que la vincule.</div>
+
+<div class="row g-4">
+    <div class="col-md-6 col-xl-4" th:each="fila : ${compras}">
+        <div class="tarjeta-urb" th:classappend="${fila['venta'].estatusVenta == 'CANCELADA'} ? 'opacity-50' : ''">
+            <small class="text-secondary"><span th:text="${@fmt.fecha(fila['venta'].fechaVenta)}">fecha</span> · Folio <span th:text="${fila['venta'].folioTicket}">F</span></small>
+            <h3 th:text="${fila['articulos']}">Artículos</h3>
+            <small>Pago: <span th:text="${fila['venta'].metodoPago}">Pago</span>
+                <th:block th:if="${fila['venta'].estatusVenta == 'COMPLETADA' and fila['venta'].puntosGenerados > 0}"> · +<span th:text="${fila['venta'].puntosGenerados}">0</span> puntos</th:block>
+                <th:block th:if="${fila['venta'].estatusVenta == 'CANCELADA'}"> · <strong>CANCELADA</strong></th:block></small>
+            <span class="precio" th:text="${@fmt.dinero(fila['venta'].total)}">$0.00</span>
+            <a class="btn btn-outline-primary btn-sm mt-2 align-self-start" target="_blank" th:href="@{/ticket/{id}(id=${fila['venta'].id})}">Ver ticket PDF</a>
+        </div>
+    </div>
+    <p class="text-center text-secondary" th:if="${!sinCliente and #lists.isEmpty(compras)}">Aún no tienes compras registradas.</p>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

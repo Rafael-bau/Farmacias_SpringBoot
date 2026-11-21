@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Productos › Categorías')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: barra}"></header>
+<div class="contenedor-app">
+<nav th:replace="~{fragments/layout :: menu('productos')}"></nav>
+<main class="contenido">
+<div th:replace="~{fragments/layout :: mensajes}"></div>
+<h1 class="titulo-seccion">Productos › Categorías</h1>
+<button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#categoriaModal" onclick="nuevoCategoria()">
+    Agregar categoría
+</button>
+<p><a th:href="@{/medicamentos}" class="btn btn-outline-secondary btn-sm">← Volver a productos</a></p>
+<div class="tabla-responsive">
+<table class="tabla-urb">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Nombre</th>
+        <th scope="col">Acción</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="categoria, fila : ${categorias}">
+        <th scope="row" th:text="${fila.count}">1</th>
+        <td><span th:text="${categoria.nombre}">Nombre</span></td>
+        <td class="text-nowrap">
+            <button type="button" class="btn btn-warning btn-sm btn-editar" data-bs-toggle="modal" data-bs-target="#categoriaModal"
+                    th:data-id="${categoria.id}" th:data-nombre="${categoria.nombre}">Editar</button>
+            <th:block >
+            <form th:action="@{/categorias/eliminar}" method="post" style="display:inline;"
+                  onsubmit="return confirm('¿Seguro que deseas eliminar esta categoría?');">
+                <input type="hidden" name="id" th:value="${categoria.id}">
+                <button type="submit" class="btn btn-danger btn-sm">Borrar</button>
+            </form>
+            </th:block>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(categorias)}"><td colspan="3" class="vacio">Aún no hay categorías. Crea la primera con el botón verde.</td></tr>
+    </tbody>
+</table>
+</div>
+
+<div class="modal fade" id="categoriaModal" tabindex="-1" aria-labelledby="categoriaModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="categoriaModalLabel">Formulario de categoría</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form th:action="@{/categorias/guardar}" method="post" id="formCategoria">
+        <input type="hidden" id="id" name="id" value="0">
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre de la categoría</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" maxlength="50" required>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar categoría</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    function nuevoCategoria()
+    {
+        document.getElementById("formCategoria").reset();
+        document.getElementById("id").value = "0";
+        document.getElementById("categoriaModalLabel").textContent = "Agregar categoría";
+        document.getElementById("btnGuardar").textContent = "Guardar categoría";
+    }
+    document.getElementById("categoriaModal").addEventListener("show.bs.modal",
+        function(event)
+        {
+            const boton = event.relatedTarget;
+            if (!boton || !boton.classList.contains("btn-editar"))
+            {
+                return;
+            }
+            document.getElementById("id").value = boton.getAttribute("data-id");
+            document.getElementById("nombre").value = boton.getAttribute("data-nombre");
+            document.getElementById("categoriaModalLabel").textContent = "Editar categoría";
+            document.getElementById("btnGuardar").textContent = "Actualizar categoría";
+        }
+    );
+</script>
+</body>
+</html>

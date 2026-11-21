@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Clientes')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: barra}"></header>
+<div class="contenedor-app">
+<nav th:replace="~{fragments/layout :: menu(${activo})}"></nav>
+<main class="contenido">
+<div th:replace="~{fragments/layout :: mensajes}"></div>
+<h1 class="titulo-seccion">Clientes</h1>
+<ul class="nav nav-tabs mb-3" sec:authorize="hasRole('CAJERO')">
+    <li class="nav-item"><a class="nav-link" th:href="@{/catalogos}">Medicamentos</a></li>
+    <li class="nav-item"><a class="nav-link active" th:href="@{/clientes}">Clientes</a></li>
+</ul>
+<button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#clienteModal" onclick="nuevoCliente()">
+    Agregar cliente
+</button>
+<form class="barra-filtros" method="get" th:action="@{/clientes}">
+    <input class="form-control" style="max-width:320px" type="search" name="q" placeholder="Buscar por nombre, teléfono o correo" th:value="${q}">
+    <button class="btn btn-urb btn-chico" type="submit">Buscar</button>
+</form>
+<div class="tabla-responsive">
+<table class="tabla-urb">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Cliente</th>
+        <th scope="col">Teléfono</th>
+        <th scope="col">Correo</th>
+        <th scope="col">Puntos</th>
+        <th scope="col">Acción</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="cliente, fila : ${clientes}">
+        <th scope="row" th:text="${fila.count}">1</th>
+        <td><span th:text="${cliente.nombre}">Nombre</span></td>
+        <td><span th:text="${cliente.telefono}">0</span></td>
+        <td><span th:text="${cliente.correo}">correo</span></td>
+        <td><span th:text="${cliente.puntosAcumulados}">0</span></td>
+        <td class="text-nowrap">
+            <button type="button" class="btn btn-warning btn-sm btn-editar" data-bs-toggle="modal" data-bs-target="#clienteModal"
+                    th:data-id="${cliente.id}" th:data-nombre="${cliente.nombre}" th:data-telefono="${cliente.telefono}" th:data-correo="${cliente.correo}">Editar</button>
+            <th:block sec:authorize="hasRole('ADMINISTRADOR')">
+            <form th:action="@{/clientes/eliminar}" method="post" style="display:inline;"
+                  onsubmit="return confirm('¿Eliminar a este cliente? Sus ventas se conservan.');">
+                <input type="hidden" name="id" th:value="${cliente.id}">
+                <button type="submit" class="btn btn-danger btn-sm">Borrar</button>
+            </form>
+            </th:block>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(clientes)}"><td colspan="6" class="vacio">No hay clientes registrados.</td></tr>
+    </tbody>
+</table>
+</div>
+
+<div class="modal fade" id="clienteModal" tabindex="-1" aria-labelledby="clienteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="clienteModalLabel">Formulario de cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form th:action="@{/clientes/guardar}" method="post" id="formCliente">
+        <input type="hidden" id="id" name="id" value="0">
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre completo</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" maxlength="100" required pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ .'\-]{2,99}" title="Solo letras y espacios (mínimo 3 caracteres)">
+          </div>
+
+          <div class="mb-3">
+            <label for="telefono" class="form-label">Teléfono (10 dígitos)</label>
+            <input type="text" class="form-control" id="telefono" name="telefono" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Deben ser 10 dígitos, sin espacios ni guiones" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="correo" class="form-label">Correo electrónico</label>
+            <input type="email" class="form-control" id="correo" name="correo" maxlength="100" required>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar cliente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    function nuevoCliente()
+    {
+        document.getElementById("formCliente").reset();
+        document.getElementById("id").value = "0";
+        document.getElementById("clienteModalLabel").textContent = "Agregar cliente";
+        document.getElementById("btnGuardar").textContent = "Guardar cliente";
+    }
+    document.getElementById("clienteModal").addEventListener("show.bs.modal",
+        function(event)
+        {
+            const boton = event.relatedTarget;
+            if (!boton || !boton.classList.contains("btn-editar"))
+            {
+                return;
+            }
+            document.getElementById("id").value = boton.getAttribute("data-id");
+            document.getElementById("nombre").value = boton.getAttribute("data-nombre");
+            document.getElementById("telefono").value = boton.getAttribute("data-telefono");
+            document.getElementById("correo").value = boton.getAttribute("data-correo");
+            document.getElementById("clienteModalLabel").textContent = "Editar cliente";
+            document.getElementById("btnGuardar").textContent = "Actualizar cliente";
+        }
+    );
+</script>
+</body>
+</html>

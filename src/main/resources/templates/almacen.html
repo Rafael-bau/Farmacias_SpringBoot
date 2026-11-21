@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Almacén')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: barra}"></header>
+<div class="contenedor-app">
+<nav th:replace="~{fragments/layout :: menu('almacen')}"></nav>
+<main class="contenido">
+<div th:replace="~{fragments/layout :: mensajes}"></div>
+<h1 class="titulo-seccion">Almacén</h1>
+
+<form class="barra-filtros" method="get" th:action="@{/almacen}">
+    <a class="btn btn-sm" th:classappend="${#strings.isEmpty(filtro)} ? 'btn-primary' : 'btn-outline-primary'" th:href="@{/almacen}">Todos</a>
+    <a class="btn btn-sm" th:classappend="${filtro == 'stock'} ? 'btn-primary' : 'btn-outline-primary'" th:href="@{/almacen(filtro='stock')}">Stock bajo / agotados</a>
+    <input type="hidden" name="filtro" th:value="${filtro}">
+    <input class="form-control" style="max-width:280px" type="search" name="q" placeholder="Buscar medicamento, código o sustancia" th:value="${q}">
+    <button class="btn btn-urb btn-chico" type="submit">Buscar</button>
+</form>
+
+<div class="tabla-responsive">
+    <table class="tabla-urb">
+        <thead><tr><th>Medicamento</th><th>Categoría</th><th>Stock vigente</th><th>Mínimo</th><th>Lotes</th><th>Próxima caducidad</th><th>Estado</th></tr></thead>
+        <tbody>
+        <tr th:each="a : ${items}"
+            th:classappend="${a['estado'] == 'AGOTADO'} ? 'fila-caducado' : (${a['estado'] == 'STOCK BAJO'} ? 'fila-alerta' : '')">
+            <td><span th:text="${a['nombre_comercial']}">Medicamento</span><br><small th:text="${a['sustancia_activa']}">sustancia</small></td>
+            <td th:text="${a['nombre_categoria']}">Categoría</td>
+            <td class="text-center"><span th:text="${@fmt.entero(a['stock_vigente'])}">0</span>
+                <th:block th:if="${@fmt.entero(a['stock_caducado']) > 0}"><br><small>(+<span th:text="${@fmt.entero(a['stock_caducado'])}">0</span> caducado)</small></th:block></td>
+            <td class="text-center" th:text="${@fmt.entero(a['stock_minimo'])}">0</td>
+            <td class="text-center" th:text="${@fmt.entero(a['lotes_con_stock'])}">0</td>
+            <td class="text-center" th:text="${@fmt.fecha(a['proxima_caducidad'])}">fecha</td>
+            <td class="text-center" th:text="${a['estado']}">Estado</td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(items)}"><td colspan="7" class="vacio">No hay medicamentos que mostrar.</td></tr>
+        </tbody>
+    </table>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:fragment="head(titulo)">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titulo} + ' · Farmacias URB'">Farmacias URB</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Alike&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+
+<body>
+
+<header th:fragment="barra" class="barra-superior">
+    <a class="marca" th:href="@{/}">Farmacias URB</a>
+    <details class="usuario-barra">
+        <summary>
+            <span sec:authentication="principal.usuario.nombre">Usuario</span>
+            <span class="avatar"><i class="bi bi-person-fill"></i></span>
+        </summary>
+        <div class="menu-usuario">
+            <span class="rol"><span sec:authentication="principal.usuario.rol.nombre">Rol</span> · <span sec:authentication="principal.usuario.correo">correo</span></span>
+            <a th:href="@{/configuracion}"><i class="bi bi-gear"></i> Mi cuenta</a>
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-link text-decoration-none text-dark px-3 py-2 w-100 text-start">
+                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                </button>
+            </form>
+        </div>
+    </details>
+</header>
+
+<nav th:fragment="menu(activo)" class="menu-lateral">
+    <a class="item" th:classappend="${activo == 'inicio'} ? 'activo'" th:href="@{/}"><i class="bi bi-house-door-fill"></i><span>Inicio</span></a>
+
+    <th:block sec:authorize="hasRole('ADMINISTRADOR')">
+        <a class="item" th:classappend="${activo == 'inventario'} ? 'activo'" th:href="@{/inventario}"><i class="bi bi-box-seam"></i><span>Inventario</span></a>
+        <a class="item" th:classappend="${activo == 'entradas'} ? 'activo'" th:href="@{/entradas}"><i class="bi bi-truck"></i><span>Entradas</span></a>
+        <a class="item" th:classappend="${activo == 'salidas'} ? 'activo'" th:href="@{/salidas}"><i class="bi bi-clipboard2-check-fill"></i><span>Salidas</span></a>
+        <a class="item" th:classappend="${activo == 'almacen'} ? 'activo'" th:href="@{/almacen}"><i class="bi bi-capsule"></i><span>Almacén</span></a>
+        <a class="item" th:classappend="${activo == 'ventas'} ? 'activo'" th:href="@{/ventas}"><i class="bi bi-graph-up-arrow"></i><span>Ventas</span></a>
+        <a class="item" th:classappend="${activo == 'configuracion'} ? 'activo'" th:href="@{/configuracion}"><i class="bi bi-gear-fill"></i><span>Configuración</span></a>
+        <a class="sub" th:classappend="${activo == 'usuarios'} ? 'activo'" th:href="@{/usuarios}">Usuarios</a>
+        <a class="sub" th:classappend="${activo == 'proveedores'} ? 'activo'" th:href="@{/proveedores}">Proveedores</a>
+        <a class="sub" th:classappend="${activo == 'productos'} ? 'activo'" th:href="@{/medicamentos}">Productos</a>
+        <a class="sub" th:classappend="${activo == 'clientes'} ? 'activo'" th:href="@{/clientes}">Clientes</a>
+        <a class="sub" th:href="@{/swagger-ui.html}" target="_blank">API (Swagger)</a>
+    </th:block>
+
+    <th:block sec:authorize="hasRole('CAJERO')">
+        <a class="item" th:classappend="${activo == 'inventario'} ? 'activo'" th:href="@{/inventario}"><i class="bi bi-box-seam"></i><span>Inventario</span></a>
+        <a class="item" th:classappend="${activo == 'pos'} ? 'activo'" th:href="@{/pos}"><i class="bi bi-cart-fill"></i><span>Compras</span></a>
+        <a class="item" th:classappend="${activo == 'catalogos'} ? 'activo'" th:href="@{/catalogos}"><i class="bi bi-journals"></i><span>Catálogos</span></a>
+        <a class="item" th:classappend="${activo == 'almacen'} ? 'activo'" th:href="@{/almacen}"><i class="bi bi-capsule"></i><span>Almacén</span></a>
+        <a class="item" th:classappend="${activo == 'ventas'} ? 'activo'" th:href="@{/ventas}"><i class="bi bi-graph-up-arrow"></i><span>Ventas</span></a>
+        <a class="item" th:classappend="${activo == 'configuracion'} ? 'activo'" th:href="@{/configuracion}"><i class="bi bi-gear-fill"></i><span>Configuración</span></a>
+    </th:block>
+
+    <th:block sec:authorize="hasRole('CLIENTE')">
+        <a class="item" th:classappend="${activo == 'compras'} ? 'activo'" th:href="@{/mis-compras}"><i class="bi bi-cart-fill"></i><span>Compras</span></a>
+        <a class="item" th:classappend="${activo == 'catalogos'} ? 'activo'" th:href="@{/catalogos}"><i class="bi bi-journals"></i><span>Catálogos</span></a>
+        <a class="item" th:classappend="${activo == 'configuracion'} ? 'activo'" th:href="@{/configuracion}"><i class="bi bi-gear-fill"></i><span>Configuración</span></a>
+    </th:block>
+</nav>
+
+<div th:fragment="mensajes">
+    <div th:if="${mensaje != null}" class="alert" th:classappend="'alert-' + ${tipo}" role="alert" th:text="${mensaje}"></div>
+</div>
+
+<th:block th:fragment="scripts">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</th:block>
+
+</body>
+</html>

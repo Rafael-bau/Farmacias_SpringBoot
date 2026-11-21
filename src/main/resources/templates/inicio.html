@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Inicio')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: barra}"></header>
+<div class="contenedor-app">
+<nav th:replace="~{fragments/layout :: menu('inicio')}"></nav>
+<main class="contenido">
+<div th:replace="~{fragments/layout :: mensajes}"></div>
+<th:block th:if="${esCliente}">
+    <div class="banner"><span>Farmacias URB</span></div>
+    <h1 class="titulo-seccion">Inicio</h1>
+    <h2 class="text-center fw-normal mb-4">Novedades</h2>
+    <div class="row g-4">
+        <div class="col-md-6 col-xl-4" th:each="p : ${novedades}">
+            <div class="tarjeta-urb">
+                <i class="bi bi-capsule-pill icono-grande"></i>
+                <h3 th:text="${p['nombre_comercial']}">Medicamento</h3>
+                <small class="text-secondary" th:text="${p['sustancia_activa']} + ' · ' + ${p['nombre_categoria']}"></small>
+                <span class="precio" th:text="${@fmt.dinero(p['precio_venta'])}">$0.00</span>
+            </div>
+        </div>
+        <p class="text-center text-secondary" th:if="${#lists.isEmpty(novedades)}">Pronto habrá novedades.</p>
+    </div>
+</th:block>
+
+<th:block th:unless="${esCliente}">
+    <h1 class="titulo-seccion">Inicio</h1>
+    <div class="row g-4 justify-content-between">
+        <div class="col-lg-5">
+            <a class="alerta-card alerta-caducidad" th:href="@{/inventario(filtro='caducidad')}">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>Alerta de Caducidad &gt;&gt; <span class="contador" th:text="${alertasCaducidad}">0</span></span>
+            </a>
+        </div>
+        <div class="col-lg-5">
+            <a class="alerta-card alerta-stock" th:href="@{/almacen(filtro='stock')}">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>Stock Bajo &gt;&gt; <span class="contador" th:text="${alertasStock}">0</span></span>
+            </a>
+        </div>
+    </div>
+
+    <h2 class="subtitulo">Medicamentos</h2>
+    <div class="tabla-responsive">
+        <table class="tabla-urb">
+            <thead><tr><th>Medicamento</th><th>Stock</th></tr></thead>
+            <tbody>
+            <tr th:each="m : ${medicamentos}"
+                th:classappend="${m['estado'] == 'AGOTADO'} ? 'fila-caducado' : (${m['estado'] == 'STOCK BAJO'} ? 'fila-alerta' : '')">
+                <td th:text="${m['nombre_comercial']}">Medicamento</td>
+                <td class="text-center" th:text="${@fmt.entero(m['stock_vigente'])}">0</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(medicamentos)}">
+                <td colspan="2" class="vacio">Aún no hay medicamentos registrados. Empieza en Configuración › Productos.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</th:block>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>
