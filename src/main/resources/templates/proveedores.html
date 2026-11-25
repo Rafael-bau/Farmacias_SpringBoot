@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Proveedores')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: barra}"></header>
+<div class="contenedor-app">
+<nav th:replace="~{fragments/layout :: menu('proveedores')}"></nav>
+<main class="contenido">
+<div th:replace="~{fragments/layout :: mensajes}"></div>
+<h1 class="titulo-seccion">Proveedores</h1>
+<button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#proveedorModal" onclick="nuevoProveedor()">
+    Agregar proveedor
+</button>
+<div class="tabla-responsive">
+<table class="tabla-urb">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Proveedor</th>
+        <th scope="col">Teléfono</th>
+        <th scope="col">Correo</th>
+        <th scope="col">Estatus</th>
+        <th scope="col">Acción</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="proveedor, fila : ${proveedores}" th:classappend="${proveedor.estatus} ? '' : 'fila-inactiva'">
+        <th scope="row" th:text="${fila.count}">1</th>
+        <td><span th:text="${proveedor.nombre}">Nombre</span><br><small th:text="${proveedor.direccion}">Dirección</small></td>
+        <td><span th:text="${proveedor.telefono}">0</span></td>
+        <td><span th:text="${proveedor.correo}">correo</span></td>
+        <td><span class="insignia" th:classappend="${proveedor.estatus} ? 'ok' : 'peligro'" th:text="${proveedor.estatus} ? 'Activo' : 'Baja'">Activo</span></td>
+        <td class="text-nowrap">
+            <button type="button" class="btn btn-warning btn-sm btn-editar" data-bs-toggle="modal" data-bs-target="#proveedorModal"
+                    th:data-id="${proveedor.id}" th:data-nombre="${proveedor.nombre}" th:data-telefono="${proveedor.telefono}" th:data-correo="${proveedor.correo}" th:data-direccion="${proveedor.direccion}" th:data-estatus="${proveedor.estatus} ? 1 : 0">Editar</button>
+            <th:block >
+            <form th:action="@{/proveedores/eliminar}" method="post" style="display:inline;"
+                  onsubmit="return confirm('¿Dar de baja este proveedor?');">
+                <input type="hidden" name="id" th:value="${proveedor.id}">
+                <button type="submit" class="btn btn-danger btn-sm">Baja</button>
+            </form>
+            </th:block>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(proveedores)}"><td colspan="6" class="vacio">Aún no hay proveedores. Crea el primero con el botón verde.</td></tr>
+    </tbody>
+</table>
+</div>
+
+<div class="modal fade" id="proveedorModal" tabindex="-1" aria-labelledby="proveedorModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="proveedorModalLabel">Formulario de proveedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form th:action="@{/proveedores/guardar}" method="post" id="formProveedor">
+        <input type="hidden" id="id" name="id" value="0">
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre / razón social</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" maxlength="100" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="telefono" class="form-label">Teléfono (10 dígitos)</label>
+            <input type="text" class="form-control" id="telefono" name="telefono" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" title="Deben ser 10 dígitos">
+          </div>
+
+          <div class="mb-3">
+            <label for="correo" class="form-label">Correo electrónico</label>
+            <input type="email" class="form-control" id="correo" name="correo" maxlength="100">
+          </div>
+
+          <div class="mb-3">
+            <label for="direccion" class="form-label">Dirección</label>
+            <input type="text" class="form-control" id="direccion" name="direccion" maxlength="200">
+          </div>
+
+          <div class="mb-3">
+            <label for="estatus" class="form-label">Estatus</label>
+            <select class="form-select" id="estatus" name="estatus">
+                <option value="1">Activo</option>
+                <option value="0">Baja</option>
+            </select>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar proveedor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    function nuevoProveedor()
+    {
+        document.getElementById("formProveedor").reset();
+        document.getElementById("id").value = "0";
+        document.getElementById("proveedorModalLabel").textContent = "Agregar proveedor";
+        document.getElementById("btnGuardar").textContent = "Guardar proveedor";
+    }
+    document.getElementById("proveedorModal").addEventListener("show.bs.modal",
+        function(event)
+        {
+            const boton = event.relatedTarget;
+            if (!boton || !boton.classList.contains("btn-editar"))
+            {
+                return;
+            }
+            document.getElementById("id").value = boton.getAttribute("data-id");
+            document.getElementById("nombre").value = boton.getAttribute("data-nombre");
+            document.getElementById("telefono").value = boton.getAttribute("data-telefono");
+            document.getElementById("correo").value = boton.getAttribute("data-correo");
+            document.getElementById("direccion").value = boton.getAttribute("data-direccion");
+            document.getElementById("estatus").value = boton.getAttribute("data-estatus");
+            document.getElementById("proveedorModalLabel").textContent = "Editar proveedor";
+            document.getElementById("btnGuardar").textContent = "Actualizar proveedor";
+        }
+    );
+</script>
+</body>
+</html>

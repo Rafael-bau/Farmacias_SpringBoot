@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Inventario')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: barra}"></header>
+<div class="contenedor-app">
+<nav th:replace="~{fragments/layout :: menu('inventario')}"></nav>
+<main class="contenido">
+<div th:replace="~{fragments/layout :: mensajes}"></div>
+<h1 class="titulo-seccion">Inventario</h1>
+
+<form class="barra-filtros" method="get" th:action="@{/inventario}">
+    <a class="btn btn-sm" th:classappend="${#strings.isEmpty(filtro)} ? 'btn-primary' : 'btn-outline-primary'" th:href="@{/inventario}">Todos</a>
+    <a class="btn btn-sm" th:classappend="${filtro == 'caducidad'} ? 'btn-primary' : 'btn-outline-primary'" th:href="@{/inventario(filtro='caducidad')}">Caducidad</a>
+    <a class="btn btn-sm" th:classappend="${filtro == 'stock'} ? 'btn-primary' : 'btn-outline-primary'" th:href="@{/inventario(filtro='stock')}">Stock bajo</a>
+    <input type="hidden" name="filtro" th:value="${filtro}">
+    <input class="form-control" style="max-width:280px" type="search" name="q" placeholder="Buscar medicamento o código" th:value="${q}">
+    <button class="btn btn-urb btn-chico" type="submit">Buscar</button>
+</form>
+
+<div class="tabla-responsive">
+    <table class="tabla-urb">
+        <thead><tr><th>Medicamento</th><th>Stock</th><th>Caducidad del lote</th><th>Estado</th></tr></thead>
+        <tbody>
+        <tr th:each="l : ${lotes}"
+            th:classappend="${l['estado'] == 'CADUCADO'} ? 'fila-caducado' : (${l['estado'] == 'POR CADUCAR' or l['estado'] == 'STOCK BAJO'} ? 'fila-alerta' : '')">
+            <td><span th:text="${l['nombre_comercial']}">Medicamento</span><br><small>Lote <span th:text="${l['num_lote']}">L</span></small></td>
+            <td class="text-center" th:text="${@fmt.entero(l['stock_actual'])}">0</td>
+            <td class="text-center"><span th:text="${@fmt.fecha(l['fecha_caducidad'])}">fecha</span>
+                <th:block th:if="${@fmt.entero(l['dias_restantes']) >= 0}"><br><small>(<span th:text="${@fmt.entero(l['dias_restantes'])}">0</span> días)</small></th:block></td>
+            <td class="text-center" th:text="${l['estado']}">Estado</td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(lotes)}"><td colspan="4" class="vacio">No hay lotes que mostrar.</td></tr>
+        </tbody>
+    </table>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

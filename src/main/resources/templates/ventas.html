@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Ventas')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: barra}"></header>
+<div class="contenedor-app">
+<nav th:replace="~{fragments/layout :: menu('ventas')}"></nav>
+<main class="contenido">
+<div th:replace="~{fragments/layout :: mensajes}"></div>
+<h1 class="titulo-seccion">Ventas</h1>
+<p class="text-secondary" sec:authorize="hasRole('CAJERO')">Se muestran tus ventas. Para registrar una nueva, ve a <a th:href="@{/pos}">Compras</a>.</p>
+
+<div class="tabla-responsive">
+    <table class="tabla-urb">
+        <thead><tr><th>Folio</th><th>Fecha</th><th>Cliente</th><th>Cajero</th><th>Pago</th><th>Total</th><th>Estatus</th><th>Acción</th></tr></thead>
+        <tbody>
+        <tr th:each="venta : ${ventas}" th:classappend="${venta.estatusVenta == 'CANCELADA'} ? 'fila-inactiva' : ''">
+            <td th:text="${venta.folioTicket}">Folio</td>
+            <td class="text-center" th:text="${@fmt.fecha(venta.fechaVenta)}">fecha</td>
+            <td th:text="${venta.cliente == null} ? 'Mostrador' : ${venta.cliente.nombre}">Cliente</td>
+            <td th:text="${venta.usuario.nombre}">Cajero</td>
+            <td class="text-center" th:text="${venta.metodoPago}">Pago</td>
+            <td class="text-end" th:text="${@fmt.dinero(venta.total)}">$0.00</td>
+            <td class="text-center"><span class="insignia" th:classappend="${venta.estatusVenta == 'CANCELADA'} ? 'peligro' : 'ok'" th:text="${venta.estatusVenta}">Estatus</span></td>
+            <td class="text-nowrap">
+                <a class="btn btn-outline-primary btn-sm" target="_blank" th:href="@{/ticket/{id}(id=${venta.id})}">Ticket PDF</a>
+                <th:block sec:authorize="hasRole('ADMINISTRADOR')">
+                    <form th:if="${venta.estatusVenta == 'COMPLETADA'}" th:action="@{/ventas/cancelar}" method="post" style="display:inline;"
+                          onsubmit="return confirm('¿Cancelar esta venta? Se devolverá el stock y se revertirán los puntos.');">
+                        <input type="hidden" name="id" th:value="${venta.id}">
+                        <button type="submit" class="btn btn-danger btn-sm">Cancelar</button>
+                    </form>
+                </th:block>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(ventas)}"><td colspan="8" class="vacio">Aún no hay ventas registradas.</td></tr>
+        </tbody>
+    </table>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

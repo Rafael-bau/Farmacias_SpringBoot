@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Catálogos')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: barra}"></header>
+<div class="contenedor-app">
+<nav th:replace="~{fragments/layout :: menu('catalogos')}"></nav>
+<main class="contenido">
+<div th:replace="~{fragments/layout :: mensajes}"></div>
+<h1 class="titulo-seccion">Catálogos</h1>
+
+<ul class="nav nav-tabs mb-3" sec:authorize="hasRole('CAJERO')">
+    <li class="nav-item"><a class="nav-link active" th:href="@{/catalogos}">Medicamentos</a></li>
+    <li class="nav-item"><a class="nav-link" th:href="@{/clientes}">Clientes</a></li>
+</ul>
+
+<form class="barra-filtros" method="get" th:action="@{/catalogos}">
+    <input class="form-control" style="max-width:340px" type="search" name="q" placeholder="Buscar por nombre o sustancia activa" th:value="${q}">
+    <button class="btn btn-urb btn-chico" type="submit">Buscar</button>
+</form>
+
+<div class="row g-4">
+    <div class="col-md-6 col-xl-4" th:each="p : ${productos}">
+        <div class="tarjeta-urb">
+            <i class="bi bi-capsule-pill icono-grande"></i>
+            <h3 th:text="${p['nombre_comercial']}">Medicamento</h3>
+            <small class="text-secondary" th:text="${p['sustancia_activa']} + ' · ' + ${p['nombre_categoria']}"></small>
+            <span class="insignia ok align-self-start" th:if="${@fmt.entero(p['stock']) > 0}">Disponible</span>
+            <span class="insignia peligro align-self-start" th:unless="${@fmt.entero(p['stock']) > 0}">Agotado</span>
+            <span class="precio" th:text="${@fmt.dinero(p['precio_venta'])}">$0.00</span>
+        </div>
+    </div>
+    <p class="text-center text-secondary" th:if="${#lists.isEmpty(productos)}">No se encontraron medicamentos.</p>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+</body>
+</html>

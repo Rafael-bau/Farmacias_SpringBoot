@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Configuración')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: barra}"></header>
+<div class="contenedor-app">
+<nav th:replace="~{fragments/layout :: menu('configuracion')}"></nav>
+<main class="contenido">
+<div th:replace="~{fragments/layout :: mensajes}"></div>
+<h1 class="titulo-seccion">Configuración</h1>
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="tarjeta-urb">
+            <h3>Mi cuenta</h3>
+            <p class="mb-1"><strong sec:authentication="principal.usuario.nombre">Nombre</strong></p>
+            <p class="mb-1" sec:authentication="principal.usuario.correo">correo</p>
+            <p class="mb-0"><span class="insignia ok" sec:authentication="principal.usuario.rol.nombre">Rol</span></p>
+            <th:block th:if="${perfilCliente != null}">
+                <hr>
+                <p class="mb-1">Teléfono: <span th:text="${perfilCliente.telefono}">0</span></p>
+                <p class="mb-0 fs-5">Puntos acumulados: <strong th:text="${perfilCliente.puntosAcumulados}">0</strong></p>
+            </th:block>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="tarjeta-urb">
+            <h3>Cambiar contraseña</h3>
+            <form th:action="@{/configuracion/password}" method="post" class="d-grid gap-2 mt-2">
+                <input class="form-control" type="password" name="actual" placeholder="Contraseña actual" required autocomplete="current-password">
+                <input class="form-control" type="password" name="nueva" placeholder="Nueva contraseña (mín. 8 caracteres)" minlength="8" maxlength="72" required autocomplete="new-password">
+                <input class="form-control" type="password" name="confirmar" placeholder="Confirmar nueva contraseña" minlength="8" maxlength="72" required autocomplete="new-password">
+                <button class="btn btn-urb" type="submit">Actualizar contraseña</button>
+            </form>
+        </div>
+    </div>
+</div>
+</main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
